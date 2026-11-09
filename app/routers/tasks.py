@@ -23,7 +23,7 @@ async def list_tasks(q: str | None = None) -> str:
     items = "".join(f"<li>{task['title']}</li>" for task in filtered_tasks)
     return f"<h1>Задачи</h1><ul>{items}</ul>"
 
-@router.get("/count", response_class=PlainTextResponse)
+@router.get("/count", response_class=PlainTextResponse, response_model=None)
 async def task_count(q: str | None = None) -> str | Response:
     filtered_tasks = tasks
     if q is not None:
