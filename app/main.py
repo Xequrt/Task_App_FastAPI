@@ -1,11 +1,13 @@
 from fastapi import FastAPI, Response
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from app.routers import tasks, system
 
 app = FastAPI()
 app.include_router(tasks.router)
 app.include_router(system.router)
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/")

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{ task.title }}</title>
+  </head>
+  <body>
+    <h1>{{ task.title }}</h1>
+    <p>Идентификатор: {{ task.id }}</p>
+    {% if task.completed %}
+      <p>Задача выполнена</p>
+    {% else %}
+      <p>Задача ожидает выполнения</p>
+    {% endif %}
+    <a href="/tasks">К списку задач</a>
+  </body>
+</html>

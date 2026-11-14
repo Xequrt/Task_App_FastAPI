@@ -1,29 +1,27 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Response, status, HTTPException, Path
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi import APIRouter, Request, status, HTTPException, Path
+from fastapi.responses import HTMLResponse, Response, PlainTextResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 
 TaskData = dict[str, str | int | bool]
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+templates = Jinja2Templates(directory="templates")
 
 tasks: list[TaskData] = [
-    {"id": 1, "title": "Изучить параметр пути", "completed": False, "tag": "work"},
-    {"id": 2, "title": "Найти задачу", "completed": False, "tag": "study"},
+    {"id": 1, "title": "Подключить Jinja", "completed": True, "tag": "work"},
+    {"id": 2, "title": "Создать шаблон", "completed": False, "tag": "work"},
 ]
 
 
 @router.get("", response_class=HTMLResponse)
-async def list_tasks(q: str | None = None) -> str:
-    filtered_tasks = tasks
-    if q is not None:
-        normalized_query = q.casefold()
-        filtered_tasks = [
-            task for task in tasks if normalized_query in str(task["title"]).casefold()
-        ]
-
-    items = "".join(f"<li>{task['title']}</li>" for task in filtered_tasks)
-    return f"<h1>Задачи</h1><ul>{items}</ul>"
+async def list_tasks(request: Request) -> Response:
+    return templates.TemplateResponse(
+        request=request,
+        name="tasks/index.html",
+        context={"tasks": tasks},
+    )
 
 
 @router.get("/tag/{name}", response_class=HTMLResponse)
@@ -45,13 +43,18 @@ async def new_task() -> str:
 
 @router.get("/{task_id}", response_class=HTMLResponse)
 async def show_task(
+    request: Request,
     task_id: Annotated[int, Path(gt=0)],
-) -> str:
-    for task in tasks:
-        if task["id"] == task_id:
-            return f"<h1>{task['title']}</h1>"
-
-    raise HTTPException(status_code=404, detail="Task not found")
+) -> Response:
+    task = next((item for item in tasks if item["id"] == task_id), None)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return templates.TemplateResponse(
+        request=request,
+        name="tasks/show.html",
+        context={"task": task}
+    )
 
 @router.get("/count", response_class=PlainTextResponse, response_model=None)
 async def task_count(q: str | None = None) -> str | Response:
